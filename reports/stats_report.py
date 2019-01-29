@@ -617,18 +617,9 @@ def thisweek_stats():
 
 # GENERAL
 
-def total_albums():
-    sql = "SELECT COUNT(albumid) FROM album where SourceID<>6;"
-    results = common.get_results(sql)
-    return results[0][0]
 
 def streamed_albums():
     sql = "SELECT COUNT(albumid) FROM album where SourceID=6;"
-    results = common.get_results(sql)
-    return results[0][0]
-
-def total_artists():
-    sql = "SELECT COUNT(artistid) FROM artist;"
     results = common.get_results(sql)
     return results[0][0]
 
@@ -647,22 +638,6 @@ def total_streams():
     results = common.get_results(sql)
     return results[0][0]
 
-def total_albums_played():
-    sql = "SELECT SUM(played) FROM album where sourceid<>6;"
-    results = common.get_results(sql)
-    return results[0][0]
-
-def total_time():
-    sql = "SELECT SUM(tracklength) FROM tracklengths inner join album on tracklengths.albumid = album.albumid " \
-          "where album.sourceid<>6;"
-    results = common.get_results(sql)
-    return results[0][0]
-
-def total_excl_bonus():
-    sql = "SELECT SUM(tracklength) FROM tracklengths inner join album on tracklengths.albumid = album.albumid " \
-          "where album.sourceid<> 6 and BonusTrack = 0;"
-    results = common.get_results(sql)
-    return results[0][0]
 
 def get_media_count(physical):
     if physical:
@@ -695,12 +670,12 @@ def main():
 
     openreportfile()
 
-    albumcount = total_albums()
-    artistcount = total_artists()
+    albumcount = common.total_albums()
+    artistcount = common.total_artists()
     streamcount = streamed_albums()
 
     logcount = total_logs()
-    albumsplayed = total_albums_played()
+    albumsplayed = common.total_albums_played()
     albumsstreamed = total_streams()
     physical_albums = get_media_count(True)
     digital_albums = get_media_count(False)
@@ -729,8 +704,8 @@ def main():
 
     f.write("{:<30}{:>10.2f}\n\n".format("Total Size (GB):", total_size()))
 
-    f.write("{:<30}{:>10.2f}\n".format("Total Time (hrs):", total_time() / 3600))
-    f.write("{:<30}{:>10.2f}\n\n".format("Excl. Bonus (hrs):", total_excl_bonus() / 3600))
+    f.write("{:<30}{:>10.2f}\n".format("Total Time (hrs):", common.total_time() / 3600))
+    f.write("{:<30}{:>10.2f}\n\n".format("Excl. Bonus (hrs):", common.total_excl_bonus() / 3600))
 
     f.write("\n\n")
 
