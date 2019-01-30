@@ -37,15 +37,15 @@ def run():
             this_artist['played'] = 1
             this_artist = this_artist.reindex(date_range, fill_value=0)
 
-            plt.rcParams.update({'font.size': 20})
+            plt.rcParams.update({'font.size': 12})
             plt.rcParams.update({'font.family': 'monospace'})
 
-            fig, ax = plt.subplots(figsize=(30, 15))
+            fig, ax = plt.subplots(figsize=(20, 10))
 
             ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
             ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))
             ax.yaxis.label.set_visible(False)
-            ax.grid('on', which='major', axis='x')
+            ax.grid(True, which='major', axis='x')
 
             plt.title(a.upper())
 

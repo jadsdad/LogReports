@@ -1,47 +1,35 @@
-import matplotlib.pyplot as plt
-from pathlib import Path
-from datetime import date
+#!/usr/bin/env python
+# coding: utf-8
+
+import pandas as pd
 import logtools_common.logtools_common as common
+import matplotlib.pylab as plt
+import os
 
-conn = common.conn
-
-
-def get_mediastats(media, y):
-    sql = "SELECT YEAR(log.logdate) as Y, " \
-          "MONTH(log.logdate) as M, " \
-          "source.Source as Source, count(log.logID) as Plays " \
-          "FROM log INNER JOIN album ON log.AlbumID = album.AlbumID " \
-          "inner join source on album.SourceID = source.sourceid " \
-          "WHERE source = '{}' and year(log.logdate)={} " \
-          "GROUP BY Y, M, Source ORDER BY logdate, Source;".format(media, y)
-    results = common.get_results(sql)
-    return results
-
+from matplotlib.backends.backend_pdf import PdfPages
 
 def run():
-    plt.figure(figsize=(20,10))
-    for y in range(2018, date.today().year + 1):
-        outfile = str(Path.home()) + "/Charts/Yearly/Media Comparison - {}.pdf".format(y)
-        for media in ['Vinyl','CD','Digital','Cassette']:
-            dataplot = []
-            monthplot = []
-            data = get_mediastats(media, y)
-            for d in data:
-                m = d[1]
-                t = d[3]
-                monthplot.append(m)
-                dataplot.append(t)
-            plt.plot(monthplot, dataplot, label=media)
+    sql = "SELECT log.logDate, source.Source as Source, count(log.logID) as Plays " \
+          "FROM log INNER JOIN album ON log.AlbumID = album.AlbumID " \
+          "inner join source on album.SourceID = source.sourceid " \
+          "WHERE album.SourceID <> 6 " \
+          "GROUP BY log.logdate, Source ORDER BY logdate, Source;"
 
-        plt.legend(fontsize='x-small')
-        plt.grid(axis='x', color='lightgrey', linestyle='--', markevery=3)
-        plt.grid(axis='y', color='lightgrey', linestyle='--')
-        plt.tick_params(axis='both', labelsize=6)
-        plt.xticks(rotation=90)
-        plt.axis(xmin=1, xmax=12)
-        plt.savefig(outfile, format="pdf")
+    with PdfPages(os.path.join(common.basedir, 'Media Summary Graphs.pdf')) as pp:
+        results = pd.read_sql(sql, common.conn)
+        results['logDate'] = pd.to_datetime(results['logDate'])
+        per = results['logDate'].dt.to_period("M")
+        results = results.groupby([per,'Source'])
+        graph_results = results.sum()
+        fig, ax = plt.subplots(figsize=(15,7))
+        graph_results = graph_results['Plays'].unstack().fillna(0)
+        graph_results.plot(ax=ax, title="Media Summary")
+        ax.grid(True, which='major', axis='both')
+        ax.grid(True, which='minor', axis='x')
+
+        pp.savefig(fig)
         plt.close()
-
 
 if __name__ == '__main__':
     run()
+

@@ -20,7 +20,7 @@ def run():
 
     total = []
 
-    plt.figure(figsize=(20, 10))
+    plt.figure(figsize=(15, 7))
 
     for y in range(2018, date.today().year + 1):
         dataplot = []
