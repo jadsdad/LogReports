@@ -32,7 +32,6 @@ def run():
 
     with PdfPages(os.path.join(common.basedir, 'Frequency Graphs.pdf')) as pp:
         for a in artist_list:
-            print(a)
             this_artist = logdate_data[logdate_data['artistname'] == a]
             this_artist['played'] = 1
             this_artist = this_artist.reindex(date_range, fill_value=0)
