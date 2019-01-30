@@ -20,6 +20,8 @@ def run():
 
     total = []
 
+    plt.figure(figsize=(20, 10))
+
     for y in range(2018, date.today().year + 1):
         dataplot = []
         weekplot = []
@@ -36,14 +38,14 @@ def run():
     monthly_average = sum(total) / len(total)
 
     plt.title("Year-on-Year Comparison")
-    plt.xlabel("Calendar Week")
+    plt.xlabel("Calendar Month")
     plt.ylabel("Time (hours)")
     plt.grid(axis='x', color='lightgrey', linestyle='--', markevery=3)
     plt.grid(axis='y', color='lightgrey', linestyle='--')
     plt.axis(xmin=1, xmax=12)
     plt.axhline(y=monthly_average, color='red', linestyle='--', lw=0.5)
     plt.legend(fontsize='x-small')
-    plt.savefig(outfile, dpi=1200, format="pdf")
+    plt.savefig(outfile, format="pdf")
 
 if __name__ == '__main__':
     run()

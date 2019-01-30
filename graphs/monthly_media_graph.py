@@ -19,6 +19,7 @@ def get_mediastats(media, y):
 
 
 def run():
+    plt.figure(figsize=(20,10))
     for y in range(2018, date.today().year + 1):
         outfile = str(Path.home()) + "/Charts/Yearly/Media Comparison - {}.pdf".format(y)
         for media in ['Vinyl','CD','Digital','Cassette']:
@@ -38,7 +39,7 @@ def run():
         plt.tick_params(axis='both', labelsize=6)
         plt.xticks(rotation=90)
         plt.axis(xmin=1, xmax=12)
-        plt.savefig(outfile, dpi=2400, format="pdf")
+        plt.savefig(outfile, format="pdf")
         plt.close()
 
 
