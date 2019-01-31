@@ -4,7 +4,9 @@ from graphs import yoy_comparison_graph as yoy, \
     Art_Freq_Graphs as afg, \
     catalogue_size as catsize, \
     year_of_release as yor, \
-    media_by_year as mby
+    media_by_year as mby, \
+    albums_played_against_total as apat, \
+    db_growth as growth
 
 from multiprocessing import Pool
 
@@ -20,7 +22,9 @@ def run():
                        yoy.run(),
                        catsize.run(),
                        yor.run(),
-                       mby.run()]
+                       mby.run(),
+                       apat.run(),
+                       growth.run()]
 
     p = Pool(4)
     p.map_async(execute, report_routines)
