@@ -7,7 +7,7 @@ def run():
     fig, ax = plt.subplots(figsize=(15,7))
     sql = "select log.albumid as `Unqiue Albums Played`, min(log.logdate) as first_play from log inner join album on album.albumid = log.albumid where album.albumtypeid <> 16 group by log.albumid order by logdate asc;"
     total_sql = "select album.dateadded as `Date`, count(album.albumid) as `Total Albums in DB` from album where album.albumtypeid <> 16 group by dateadded;"
-    alllogs_sql = "select log.logdate as logdate, count(log.logid) as `Total Plays` from log inner join album on album.albumid = log.albumid where album.albumtypeid <> 16 group by log.albumid order by logdate asc;"
+    alllogs_sql = "select log.logdate as logdate, count(log.logid) as `Total Plays` from log inner join album on album.albumid = log.albumid where album.albumtypeid <> 16 group by log.logdate order by logdate asc;"
 
     total_data = pd.read_sql(total_sql, common.conn)
     total_data['Date'] = pd.to_datetime(total_data['Date'])

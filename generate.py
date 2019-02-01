@@ -6,7 +6,9 @@ from graphs import yoy_comparison_graph as yoy, \
     year_of_release as yor, \
     media_by_year as mby, \
     albums_played_against_total as apat, \
-    db_growth as growth
+    db_growth as growth, albums_by_length as abl
+from datetime import date
+
 
 from multiprocessing import Pool
 
@@ -14,8 +16,7 @@ def execute(routine):
     routine()
 
 def run():
-    report_routines = [afg.run(),
-                       catreport.main(),
+    report_routines = [catreport.main(),
                        mmg.run(),
                        stats.main(),
                        tape.generate_report(1.25),
@@ -24,10 +25,14 @@ def run():
                        yor.run(),
                        mby.run(),
                        apat.run(),
-                       growth.run()]
+                       growth.run(),
+                       abl.run()]
 
     p = Pool(4)
     p.map_async(execute, report_routines)
+
+    if date.today().weekday() == 6:
+        afg.run()
 
 if __name__ == '__main__':
     run()

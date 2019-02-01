@@ -6,7 +6,7 @@ import os
 def run():
     fig, ax = plt.subplots(figsize=(15, 7))
 
-    sql = "select CAST(album.dateadded as DATE) as `Date`, count(album.albumid) as `Albums` from album INNER JOIN (select log.albumid, min(log.logdate) as first_play from log group by log.albumid) ESC on ESC.albumid = album.albumid where album.albumtypeid <> 16 and datediff(album.dateadded, esc.first_play) <= 7 group by dateadded;"
+    sql = "select CAST(album.dateadded as DATE) as `Date`, count(album.albumid) as `Albums` from album INNER JOIN (select log.albumid, min(log.logdate) as first_play from log group by log.albumid) ESC on ESC.albumid = album.albumid where album.albumtypeid <> 16 and datediff(album.dateadded, ESC.first_play) <= 7 group by dateadded;"
 
     data = pd.read_sql(sql, common.conn)
     data['Date'] = pd.to_datetime(data['Date'])
@@ -22,10 +22,10 @@ def run():
     unique_per = unique_data['first_play'].dt.to_period("W")
     unique_results = unique_data.groupby([unique_per]).count()
 
-    results['New'] = unique_results['New Albums Played']
-    results['Progress'] = results['New'] - results['Growth']
+    results['New Albums Played'] = unique_results['New Albums Played']
+    results['Progress'] = results['New Albums Played'] - results['Growth']
 
-    results[['Growth', 'New']].plot(ax=ax, title='DB Growth Rate', legend=True)
+    results[['Growth', 'New Albums Played']].plot(ax=ax, title='DB Growth Rate', legend=True)
 
     ax.grid(True, which='major', axis='both')
     plt.savefig(os.path.join(common.basedir, 'DB Growth rate.pdf'))
@@ -35,6 +35,7 @@ def run():
     results['Progress'].plot(kind='bar', ax=ax, title='Progress', legend=True, color='blue')
     ax.grid(True, which='major', axis='both')
     plt.axhline(0, color='r')
+    plt.tight_layout()
     plt.savefig(os.path.join(common.basedir, 'DB Progress.pdf'))
     plt.close()
 

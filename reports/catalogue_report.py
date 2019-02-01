@@ -74,14 +74,14 @@ def main():
 
     for r in rows:
 
-        isgroup, artistid, artist, albumtype, yearreleased, album, label, source, \
-        albumlength, playcount, lastplayed, discs, tracks, bonus, artistcredit, rank = r[1:17]
+        mbid, sortname, isgroup, artistid, artist, albumtype, yearreleased, album, label, source, \
+        albumlength, playcount, lastplayed, discs, tracks, bonus, artistcredit, rank = r[:18]
 
 
         album = common.shorten_by_word(album, 75)
         label = common.shorten_by_word(label, 25)
 
-        if artist != currentartist:
+        if mbid != currentartist:
             if len(creditslist) > 1:
                 add_credits(creditslist)
             creditslist = [None]
@@ -109,7 +109,7 @@ def main():
 
         f.write(linestr)
 
-        currentartist = artist
+        currentartist = mbid
         currenttype = albumtype
 
     if len(creditslist) > 1:
