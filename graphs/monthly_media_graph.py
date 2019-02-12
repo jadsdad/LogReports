@@ -12,7 +12,7 @@ def run():
     sql = "SELECT log.logDate, source.Source as Source, count(log.logID) as Plays " \
           "FROM log INNER JOIN album ON log.AlbumID = album.AlbumID " \
           "inner join source on album.SourceID = source.sourceid " \
-          "WHERE album.SourceID <> 6 " \
+          "WHERE album.SourceID <> 6 and log.logDate >= '2018-01-01'" \
           "GROUP BY log.logdate, Source ORDER BY logdate, Source;"
 
     with PdfPages(os.path.join(common.basedir, 'Media Summary Graphs.pdf')) as pp:

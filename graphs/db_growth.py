@@ -6,7 +6,7 @@ import os
 def run():
     fig, ax = plt.subplots(figsize=(15, 7))
 
-    sql = "select CAST(album.dateadded as DATE) as `Date`, count(album.albumid) as `Albums` from album INNER JOIN (select log.albumid, min(log.logdate) as first_play from log group by log.albumid) ESC on ESC.albumid = album.albumid where album.albumtypeid <> 16 and datediff(album.dateadded, ESC.first_play) <= 7 group by dateadded;"
+    sql = "select CAST(album.dateadded as DATE) as `Date`, count(album.albumid) as `Albums` from album LEFT JOIN (select log.albumid, min(log.logdate) as first_play from log group by log.albumid) ESC on ESC.albumid = album.albumid where album.albumtypeid <> 16 and (played = 0 or datediff(album.dateadded, ESC.first_play) <= 7) group by dateadded;"
 
     data = pd.read_sql(sql, common.conn)
     data['Date'] = pd.to_datetime(data['Date'])
@@ -37,6 +37,7 @@ def run():
     plt.axhline(0, color='r')
     plt.tight_layout()
     plt.savefig(os.path.join(common.basedir, 'DB Progress.pdf'))
+    results.to_csv("h:\\data.csv")
     plt.close()
 
 

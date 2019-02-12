@@ -568,7 +568,7 @@ def annual_stats():
     f.write("-" * 105 + "\n")
     sql = "select year(`log`.`logDate`) as Y, sum(`albumlengths`.`albumlength`) / 3600 AS `time`, count(`log`.`logID`) AS `logcount` " \
           "from `log` inner join `albumlengths` on `log`.`AlbumID` = `albumlengths`.`albumid` inner join album on albumlengths.albumid = album.albumid " \
-          "group by Y order by Y"
+          "where year(log.logdate) >= 2017 group by Y order by Y"
     results = common.get_results(sql)
 
     for r in results:
