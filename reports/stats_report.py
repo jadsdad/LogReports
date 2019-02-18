@@ -202,7 +202,8 @@ def albums_played_last_14days():
 
 
 def albums_added_last_14days():
-    sql = "select artistcredit, album, datepurchased, source from recent_additions where datepurchased > (DATE_SUB(CURRENT_DATE, INTERVAL 28 DAY))"
+    sql = "select artistcredit, album, datepurchased, source from recent_additions where source <> 'Digital' and " \
+          "datepurchased > (DATE_SUB(CURRENT_DATE, INTERVAL 28 DAY))"
 
     results = common.get_results(sql)
     last_log_date = None
@@ -645,9 +646,9 @@ def get_media_count(physical):
     else:
         criteria = "BETWEEN 4 and 5"
 
-    sql = "SELECT COUNT(albumid) as AlbumCount FROM album where SourceID {};".format(criteria)
+    sql = "SELECT COUNT(albumid) as AlbumCount, sum(played) as Played FROM album where SourceID {};".format(criteria)
     results = common.get_results(sql)
-    return results[0][0]
+    return results[0][0], results[0][1]
 
 def format_to_HM(hours):
     if type(hours) == decimal.Decimal:
@@ -677,8 +678,8 @@ def main():
     logcount = total_logs()
     albumsplayed = common.total_albums_played()
     albumsstreamed = total_streams()
-    physical_albums = get_media_count(True)
-    digital_albums = get_media_count(False)
+    physical_albums, physical_played = get_media_count(True)
+    digital_albums, digital_played = get_media_count(False)
 
     f.write(("*" * 105) + "\n")
     f.write("GENERAL\n")
@@ -688,19 +689,16 @@ def main():
     f.write("{:<30}{:>10}\n".format("Total Albums:", albumcount))
     f.write("{:<30}{:>10}\n\n".format("Total Artists:", artistcount))
 
-    f.write("{:<30}{:>10}{:>10.2f}%\n".format("Physical Albums:", physical_albums, (physical_albums/albumcount)*100))
-    f.write("{:<30}{:>10}{:>10.2f}%\n\n".format("Digital Albums:", digital_albums, (digital_albums/albumcount)*100))
+    f.write("{:<30}{:>10}{:>10.2f}%{:>10.2f}%\n".format("Physical Albums:", physical_albums,
+                                                        (physical_albums/albumcount)*100,
+                                                        (physical_played/physical_albums)*100))
+    f.write("{:<30}{:>10}{:>10.2f}%{:>10.2f}%\n\n".format("Digital Albums:", digital_albums,
+                                                          (digital_albums/albumcount)*100,
+                                                          (digital_played/digital_albums) * 100))
 
     f.write("{:<30}{:>10}\n".format("Total Plays:", logcount))
     f.write("{:<30}{:>10}{:>10.2f}%\n".format("Unique Albums Played:", albumsplayed, (albumsplayed/albumcount)*100))
     f.write("{:<30}{:>10.2f}\n\n".format("Ratio:", (logcount/albumsplayed)))
-
-    streamed_album_pc = streamcount / (albumcount + streamcount) * 100
-    total_streams_pc = albumsstreamed / (logcount + albumsstreamed) * 100
-
-    f.write("{:<30}{:>10}{:>10.2f}%\n".format("Deleted Albums:", streamcount, streamed_album_pc))
-    f.write("{:<30}{:>10}{:>10.2f}%\n\n".format("No. Plays:", albumsstreamed, total_streams_pc))
-
 
     f.write("{:<30}{:>10.2f}\n\n".format("Total Size (GB):", total_size()))
 
