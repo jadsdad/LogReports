@@ -6,7 +6,9 @@ from graphs import yoy_comparison_graph as yoy, \
     year_of_release as yor, \
     media_by_year as mby, \
     albums_played_against_total as apat, \
-    db_growth as growth, albums_by_length as abl
+    db_growth as growth, albums_by_length as abl, \
+    albums_by_timesplayed as abtp
+
 from datetime import date
 
 
@@ -26,7 +28,8 @@ def run():
                        mby.run(),
                        apat.run(),
                        growth.run(),
-                       abl.run()]
+                       abl.run(),
+                       abtp.run()]
 
     p = Pool(4)
     p.map_async(execute, report_routines)
