@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import date
 import logtools_common.logtools_common as common
 
-outdir = str(Path.home()) + "\Charts"
+outdir = str(Path.home()) + "/Charts/Summaries"
 
 def get_y_rank(artistid, yr):
     sql = "SELECT rank FROM chart_history WHERE artistid = {} AND y = {} AND Q = 0 AND albumid = 0;".format(artistid, yr)
@@ -88,9 +88,12 @@ def seasonal(outfile):
         last_initial = initial
         outfile.write(linestr + "\n")
 
-if __name__ == '__main__':
+def run():
     outfile = io.open(os.path.join(outdir, "Artist Chart Summary.txt"), "w", encoding='utf-8')
     outfile.write("ANNUAL")
     annual(outfile)
     outfile.write("\n\n\nSEASONAL")
     seasonal(outfile)
+
+if __name__ == '__main__':
+    run()

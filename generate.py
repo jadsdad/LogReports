@@ -1,4 +1,4 @@
-from reports import catalogue_report as catreport, stats_report as stats, TapeList as tape
+from reports import catalogue_report as catreport, stats_report as stats, TapeList as tape, artist_chart_report as artcr
 from graphs import yoy_comparison_graph as yoy, \
     monthly_media_graph as mmg, \
     Art_Freq_Graphs as afg, \
@@ -19,6 +19,7 @@ def execute(routine):
 
 def run():
     report_routines = [catreport.main(),
+                       artcr.run(),
                        mmg.run(),
                        stats.main(),
                        tape.generate_report(1.25),
