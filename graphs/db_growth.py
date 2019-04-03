@@ -6,36 +6,35 @@ from datetime import date, timedelta
 
 def run():
     fig, ax = plt.subplots(figsize=(15, 7))
+
     thresh_date = date.today() - timedelta(weeks=13)
     td_string = thresh_date.strftime("%Y-%m-%d")
+    date_range = pd.date_range(td_string, date.today())
 
-    sql = "select cast(album.dateadded as date) as `Date`, count(album.albumid) as `Albums` from album where album.albumtypeid <> 16 group by cast(album.dateadded as date);"
+    sql = "select cast(album.dateadded as date) as `Date`, count(album.albumid) as `Albums Added` from album where album.albumtypeid <> 16 group by cast(album.dateadded as date);"
 
-    data = pd.read_sql(sql, common.conn)
-    data['Date'] = pd.to_datetime(data['Date'])
-    data = data[data['Date'] >= td_string]
-    per = data['Date'].dt.to_period("W")
-    results = data.groupby([per]).sum()
-    results['Growth'] = results['Albums']
+    data = pd.read_sql(sql, common.conn, index_col='Date')
+    data = data.reindex(date_range, fill_value=0)
 
-    unique_sql = "select log.albumid as `New Albums Played`, min(log.logdate) as first_play from log inner join album on album.albumid = log.albumid where album.albumtypeid <> 16 group by log.albumid order by logdate asc;"
+    unique_sql = "select log.albumid, min(log.logdate) as first_play from log inner join album on album.albumid = log.albumid where album.albumtypeid <> 16 group by log.albumid asc;"
     unique_data = pd.read_sql(unique_sql, common.conn)
-    unique_data['first_play'] = pd.to_datetime(unique_data['first_play'])
-    unique_data = unique_data[unique_data['first_play'] >= td_string]
-    unique_per = unique_data['first_play'].dt.to_period("W")
-    unique_results = unique_data.groupby([unique_per]).count()
+    unique_data = unique_data.groupby('first_play').count()
+    unique_data = unique_data.reindex(date_range, fill_value=0)
 
-    results['New Albums Played'] = unique_results['New Albums Played']
-    results['Progress'] = results['New Albums Played'] - results['Growth']
+    data['Albums Played'] = unique_data['albumid']
+    data['Progress'] = data['Albums Played'] - data['Albums Added']
 
-    results[['Growth', 'New Albums Played']].plot(ax=ax, title='DB Growth Rate', legend=True)
+    per = data.index.to_period("W")
+    results = data.groupby([per]).sum()
 
+    results[['Albums Added', 'Albums Played']].plot(ax=ax, kind='bar', title='DB Growth Rate', legend=True)
     ax.grid(True, which='major', axis='both')
+    plt.tight_layout()
     plt.savefig(os.path.join(common.basedir, 'DB Growth rate.pdf'))
     plt.close()
 
     fig, ax = plt.subplots(figsize=(15, 7))
-    results['Progress'].plot(kind='bar', ax=ax, title='Progress', legend=True, color='blue')
+    results['Progress'].plot(kind='bar', ax=ax, title='Progress', legend=True)
     ax.grid(True, which='major', axis='both')
     plt.axhline(0, color='r')
     plt.tight_layout()

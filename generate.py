@@ -1,4 +1,4 @@
-from reports import catalogue_report as catreport, stats_report as stats, TapeList as tape, artist_chart_report as artcr
+from reports import catalogue_report as catreport, stats_report as stats, TapeList as tape, artist_chart_report as artcr, album_chart_report as albcr
 from graphs import yoy_comparison_graph as yoy, \
     monthly_media_graph as mmg, \
     Art_Freq_Graphs as afg, \
@@ -9,6 +9,8 @@ from graphs import yoy_comparison_graph as yoy, \
     db_growth as growth, albums_by_length as abl, \
     albums_by_timesplayed as abtp
 
+import os
+from pathlib import Path
 from datetime import date
 
 
@@ -18,8 +20,13 @@ def execute(routine):
     routine()
 
 def run():
+
+    basedir = str(Path.home()) + "/Charts/"
+    if not os.path.exists(basedir):
+        os.mkdir(basedir)
+
     report_routines = [catreport.main(),
-                       artcr.run(),
+                       artcr.run(), albcr.run(),
                        mmg.run(),
                        stats.main(),
                        tape.generate_report(1.25),

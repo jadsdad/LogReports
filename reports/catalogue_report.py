@@ -24,7 +24,7 @@ def add_relationships(artistid, isgroup):
     previousrelationship = None
     rowindex = 1
     if rowcount > 0:
-        f.write("-" * 165)
+        f.write("-" * 180)
         rel_header = "See also:" if isgroup else "Member of: "
         rows = c.fetchall()
         for r in rows:
@@ -46,17 +46,24 @@ def add_relationships(artistid, isgroup):
         f.write("\n")
 
 def add_header():
-    linestr = "{:<20}{:<12}{:<80}{:<10}{:>10}{:>5}{:>5}{:>5}{:>5}{:>5}\n".format(
-        "Type", "Year", "Album", "Source", "Length", "P", "D", "T", "B", "R")
+    linestr = "{:<20}{:<12}{:<80}{:<25}{:>10}{:>5}{:>5}{:>5}{:>5}{:>5}{:>5}\n".format(
+        "Type", "Year", "Album", "Source", "Length", "P", "D", "T", "B", "YR", "ATR")
 
     f.write(linestr)
 
 def add_credits(creditslist):
     index = 1
-    f.write("=" * 165 + "\n")
+    f.write("=" * 180 + "\n")
     for c in creditslist[1:len(creditslist)]:
         f.write("({}) {}\n".format(index, c))
         index += 1
+
+def all_time_rank(albumid):
+    results = common.get_results("SELECT rank FROM chart_history where albumid = {} and Y = 0 and Q = 0;".format(albumid))
+    if len(results) == 0:
+        return None
+    else:
+        return results[0][0]
 
 def main():
     openreportfile()
@@ -75,8 +82,9 @@ def main():
     for r in rows:
 
         mbid, sortname, isgroup, artistid, artist, albumtype, yearreleased, album, label, source, \
-        albumlength, playcount, lastplayed, discs, tracks, bonus, artistcredit, rank = r[:18]
+        albumlength, playcount, lastplayed, discs, tracks, bonus, artistcredit, rank, albumid = r[:19]
 
+        atr = all_time_rank(albumid)
 
         album = common.shorten_by_word(album, 75)
         label = common.shorten_by_word(label, 25)
@@ -85,17 +93,17 @@ def main():
             if len(creditslist) > 1:
                 add_credits(creditslist)
             creditslist = [None]
-            f.write("=" * 165 + "\n\n\n")
-            f.write("=" * 165 + "\n")
+            f.write("=" * 180 + "\n\n\n")
+            f.write("=" * 180 + "\n")
             f.write(artist.upper() + "\n")
             add_relationships(artistid, isgroup)
             currenttype = ""
-            f.write("-" * 165+ "\n")
+            f.write("-" * 180+ "\n")
             add_header()
             #f.write("-" * 155+ "\n")
 
         if (albumtype != currenttype):
-            f.write("-" * 165+ "\n")
+            f.write("-" * 180 + "\n")
 
         if artistcredit != artist:
             if artistcredit not in creditslist:
@@ -103,9 +111,9 @@ def main():
             creditindex = creditslist.index(artistcredit)
             album += " ({})".format(creditindex)
 
-        linestr = "{:<20}{:<10}{:<2}{:<80}{:<10}{:>10}{:>5}{:>5}{:>5}{:>5}{:>5}\n".format("" if currenttype == albumtype else albumtype,
+        linestr = "{:<20}{:<10}{:<2}{:<80}{:<25}{:>10}{:>5}{:>5}{:>5}{:>5}{:>5}{:>5}\n".format("" if currenttype == albumtype else albumtype,
                                                                                           yearreleased, "*" if playcount > 0 else " ", album, source, common.format_to_MS(albumlength),
-                                                                                          playcount, discs, tracks, bonus, "-" if rank is None else rank)
+                                                                                          playcount, discs, tracks, bonus, "-" if rank is None else rank, "-" if atr is None else atr)
 
         f.write(linestr)
 

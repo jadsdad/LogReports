@@ -6,16 +6,16 @@ import logtools_common.logtools_common as common
 
 outdir = str(Path.home()) + "/Charts/Summaries"
 
-def get_y_rank(artistid, yr):
-    sql = "SELECT rank FROM chart_history WHERE artistid = {} AND y = {} AND Q = 0 AND albumid = 0;".format(artistid, yr)
+def get_y_rank(albumid, yr):
+    sql = "SELECT rank FROM chart_history WHERE albumid = {} AND y = {} AND Q = 0 and tyr=0;".format(albumid, yr)
     results = common.get_results(sql)
     if len(results) == 0:
         return None
     else:
         return results[0][0]
 
-def get_q_rank(artistid, yr, qtr):
-    sql = "SELECT rank FROM chart_history WHERE artistid = {} AND y = {} AND Q = {} AND albumid = 0;".format(artistid, yr, qtr)
+def get_q_rank(albumid, yr, qtr):
+    sql = "SELECT rank FROM chart_history WHERE albumid = {} AND y = {} AND Q = {};".format(albumid, yr, qtr)
     results = common.get_results(sql)
     if len(results) == 0:
         return None
@@ -24,10 +24,12 @@ def get_q_rank(artistid, yr, qtr):
 
 def annual(outfile):
 
-    sql = "SELECT DISTINCT artist.artistid, artist.artistname, artist.sortname " \
-          "FROM chart_history inner join artist on chart_history.artistid = artist.artistid " \
-          "where Y <> 0 AND Q = 0 AND albumid = 0 " \
-          "order by artist.sortname;"
+    sql = "SELECT DISTINCT artist.artistid, artist.artistname, artist.sortname, album.albumid, album.album " \
+          "FROM chart_history inner join albumartist on chart_history.albumid = albumartist.albumid " \
+          "INNER JOIN album on albumartist.albumid = album.albumid " \
+          "INNER JOIN artist on albumartist.artistid = artist.artistid " \
+          "where Y <> 0 AND Q = 0 and tyr = 0 " \
+          "order by artist.sortname, album.album;"
 
     artist_list = common.get_results(sql)
     years = range(2018, date.today().year + 1)
@@ -35,18 +37,18 @@ def annual(outfile):
     last_initial = ""
     outfile.write("{:<60}{}\n".format("",yrstring))
     for a in artist_list:
-        artistid, artist, sortname = a
+        artistid, artist, sortname, albumid, album = a
         initial = sortname[0].upper()
         yranks = []
         yrankstr = ""
         for y in years:
-            yrank = get_y_rank(artistid, y)
+            yrank = get_y_rank(albumid, y)
             if yrank is None:
                 yrankstr += "{:>7}".format("-")
             else:
                 yrankstr += "{:>7}".format(yrank)
 
-        linestr = "{:<63}{}".format(artist.upper(), yrankstr)
+        linestr = "{:<63}{}".format((artist.upper() + ": " + album)[:60], yrankstr)
         if initial != last_initial:
             outfile.write("-" * len(linestr) + "\n")
         last_initial = initial
@@ -54,10 +56,12 @@ def annual(outfile):
 
 
 def seasonal(outfile):
-    sql = "SELECT DISTINCT artist.artistid, artist.artistname, artist.sortname " \
-          "FROM chart_history inner join artist on chart_history.artistid = artist.artistid " \
-          "where Y <> 0 AND Q <> 0 AND albumid = 0 " \
-          "order by artist.sortname;"
+    sql = "SELECT DISTINCT artist.artistid, artist.artistname, artist.sortname, album.albumid, album.album " \
+          "FROM chart_history inner join albumartist on chart_history.albumid = albumartist.albumid " \
+          "INNER JOIN album on albumartist.albumid = album.albumid " \
+          "INNER JOIN artist on albumartist.artistid = artist.artistid " \
+          "where Y <> 0 AND Q <> 0 " \
+          "order by artist.sortname, album.album;"
 
     artist_list = common.get_results(sql)
     years = range(2018, date.today().year + 1)
@@ -70,19 +74,19 @@ def seasonal(outfile):
 
     outfile.write("{:<60}{}\n".format("", yrstring))
     for a in artist_list:
-        artistid, artist, sortname = a
+        artistid, artist, sortname, albumid, album = a
         initial = sortname[0]
         yranks = []
         yrankstr = ""
         for y in years:
             for q in quarters:
-                yrank = get_q_rank(artistid, y, q)
+                yrank = get_q_rank(albumid, y, q)
                 if yrank is None:
                     yrankstr += "{:>9}".format("-")
                 else:
                     yrankstr += "{:>9}".format(yrank)
 
-        linestr = "{:<68}{}".format(artist.upper(), yrankstr)
+        linestr = "{:<68}{}".format((artist.upper() + ": " + album)[:60], yrankstr)
         if initial != last_initial:
             outfile.write("-" * len(linestr) + "\n")
         last_initial = initial
@@ -92,7 +96,7 @@ def run():
     if not os.path.exists(outdir):
         os.mkdir(outdir)
         
-    outfile = io.open(os.path.join(outdir, "Artist Chart Summary.txt"), "w", encoding='utf-8')
+    outfile = io.open(os.path.join(outdir, "Album Chart Summary.txt"), "w", encoding='utf-8')
     outfile.write("ANNUAL")
     annual(outfile)
     outfile.write("\n\n\nSEASONAL")
