@@ -29,7 +29,7 @@ def albums_by_format():
     f.write("{:<30}{:>10}{:>11}{:>10}{:>11}{:>10}{:>11}{:>10}\n".format("by Format", "Count", "%", "Plays", "%", "Played", "%", "Ratio"))
     f.write("-" * 105 + "\n")
     sql = "SELECT source, COUNT(albumid) as SourceCount, SUM(playcount) as PlayCount, Sum(played) as Played FROM album inner join source on " \
-          "album.sourceid = source.sourceid where album.sourceid<>6 GROUP BY source ORDER BY SourceCount desc;"
+          "album.sourceid = source.sourceid where album.albumtypeid<>16 GROUP BY source ORDER BY SourceCount desc;"
     results = common.get_results(sql)
 
     for r in results:
@@ -53,7 +53,7 @@ def albums_by_type():
     f.write("{:<30}{:>10}{:>11}{:>10}{:>11}{:>10}{:>11}{:>10}\n".format("by Type", "Count", "%", "Plays", "%", "Played", "%", "Ratio"))
     f.write("-" * 105 + "\n")
     sql = "SELECT albumtype, COUNT(albumid) as TypeCount, SUM(playcount) as PlayCount, SUM(played) as Played FROM album inner join albumtype on " \
-          "album.albumtypeid = albumtype.albumtypeid where album.sourceid<>6 GROUP BY albumtype ORDER BY TypeCount desc;"
+          "album.albumtypeid = albumtype.albumtypeid where album.albumtypeid<>16 GROUP BY albumtype ORDER BY TypeCount desc;"
     results = common.get_results(sql)
 
     for r in results:
@@ -78,7 +78,7 @@ def albums_by_decade():
     f.write("{:<30}{:>10}{:>11}{:>10}{:>11}{:>10}{:>11}{:>10}\n".format("by Decade", "Count", "%", "Plays", "%", "Played","%","Ratio"))
     f.write("-" * 105 + "\n")
     sql = "SELECT (yearreleased DIV 10) * 10 as Decade, COUNT(albumid) as TypeCount, SUM(playcount) as PlayCount, sum(played) as Played FROM album " \
-          "where album.sourceid<>6 GROUP BY Decade ORDER BY Decade;"
+          "where album.albumtypeid<>16 GROUP BY Decade ORDER BY Decade;"
 
     results = common.get_results(sql)
 
@@ -105,7 +105,7 @@ def albums_by_year():
     f.write("{:<30}{:>10}{:>11}{:>10}{:>11}{:>10}{:>11}{:>10}\n".format("by Year of Release", "Count", " ", "Plays", " ", "Played","%", "Ratio"))
     f.write("-" * 105 + "\n")
     sql = "SELECT yearreleased, COUNT(albumid) as TypeCount, SUM(playcount) as PlayCount, Sum(played) as Played FROM album " \
-          "WHERE yearreleased >= 2018 and album.sourceid<>6 GROUP BY yearreleased ORDER BY yearreleased;"
+          "WHERE yearreleased >= 2018 and album.albumtypeid<>16 GROUP BY yearreleased ORDER BY yearreleased;"
 
     results = common.get_results(sql)
 
@@ -135,7 +135,7 @@ def albums_by_length():
     sql = "SELECT ((albumlength/60) DIV 15) * 15 as LengthGroup, COUNT(albumlengths.albumid) as TypeCount, " \
           "SUM(album.playcount) as PlayCount, sum(album.played) as Played " \
           "FROM albumlengths INNER JOIN album on albumlengths.albumid = album.albumid " \
-          "where albumlength < 120*60 and album.sourceid<>6 GROUP BY LengthGroup ORDER BY LengthGroup;"
+          "where albumlength < 120*60 and album.albumtypeid<>16 GROUP BY LengthGroup ORDER BY LengthGroup;"
 
     results = common.get_results(sql)
 
@@ -160,7 +160,7 @@ def albums_by_length():
     sql = "SELECT ((albumlength/60) DIV 15) * 15 as LengthGroup, COUNT(albumlengths.albumid) as TypeCount, " \
           "SUM(album.playcount) as PlayCount, sum(album.played) as Played " \
           "FROM albumlengths INNER JOIN album on albumlengths.albumid = album.albumid " \
-          "where albumlength >= 120*60 and album.sourceid<>6;"
+          "where albumlength >= 120*60 and album.albumtypeid<>16;"
 
     results = common.get_results(sql)
 
@@ -197,6 +197,19 @@ def albums_played_last_14days():
         last_log_date = logdate
         line = "{:<40}{:<40}\n".format(artistname.upper(), album)
 
+        f.write(line)
+    f.write("\n\n")
+
+
+def albums_played_multi_times_in_single_day():
+    sql = "select distinct artistcredit, album from multiple_plays_per_day;"
+
+    results = common.get_results(sql)
+    last_log_date = None
+    for r in results:
+        artistname = common.shorten_by_word(r[0], 35)
+        album = common.shorten_by_word(r[1], 35)
+        line = "{:<40}{:<40}\n".format(artistname.upper(), album)
         f.write(line)
     f.write("\n\n")
 
@@ -338,7 +351,7 @@ def top_ten_albums_last_28days():
           "join `albumlengths` on((`album`.`AlbumID` = `albumlengths`.`albumid`))) " \
           "join `log` on((`log`.`AlbumID` = `album`.`AlbumID`))) " \
           "join `albumtype` on((`album`.`AlbumTypeID` = `albumtype`.`AlbumTypeID`))) " \
-          "where log.logDate > (DATE_SUB(CURRENT_DATE, INTERVAL 28 DAY)) and album.sourceid<>6 " \
+          "where log.logDate > (DATE_SUB(CURRENT_DATE, INTERVAL 28 DAY)) and album.albumtypeid<>16 " \
           "group by `artist`.`ArtistID`,`album`.`AlbumID`,`artist`.`ArtistName`,`album`.`Album` " \
           "order by sum(`albumlengths`.`albumlength`) desc limit 10"
 
@@ -366,7 +379,7 @@ def top_ten_artists_count():
     sql = "select ArtistName, count(album.AlbumID) as Albums, sum(album.PlayCount) as Plays, sum(album.played) as Played " \
           "from artist inner join albumartist on artist.ArtistID = albumartist.ArtistID " \
           "inner join album on albumartist.albumid = album.albumid " \
-          "where album.sourceid<>6 group by artist.ArtistName order by Albums desc limit 10;"
+          "where album.albumtypeid<>16 group by artist.ArtistName order by Albums desc limit 10;"
 
     results = common.get_results(sql)
 
@@ -393,7 +406,7 @@ def top_ten_artists_log():
     sql = "select artist.ArtistName, count(album.AlbumID) as Albums, sum(album.PlayCount) as Plays, sum(album.played) as Played " \
           "from artist inner join albumartist on artist.artistid = albumartist.artistid " \
           "inner join album on album.albumid = albumartist.albumid " \
-          "where album.sourceid<>6 group by artist.ArtistName order by Plays desc limit 10;"
+          "where album.albumtypeid<>16 group by artist.ArtistName order by Plays desc limit 10;"
 
     results = common.get_results(sql)
 
@@ -440,7 +453,7 @@ def top_ten_artists_time_total():
           "albumlengths inner join album on albumlengths.albumid = album.albumid " \
           "inner join albumartist on album.albumid = albumartist.albumid " \
           "inner join artist on albumartist.artistid = artist.artistid " \
-          "where album.sourceid<>6 " \
+          "where album.albumtypeid<>16 " \
           "group by artistname order by hours desc limit 10;"
 
     results = common.get_results(sql)
@@ -465,7 +478,7 @@ def top_ten_artists_28days():
           "inner join album on album.albumid = albumlengths.albumid " \
           "inner join albumartist on album.albumid = albumartist.albumid " \
           "inner join artist on albumartist.artistid = artist.ArtistID " \
-          "where log.logDate > (DATE_SUB(CURRENT_DATE, INTERVAL 28 DAY)) and album.sourceid<>6 " \
+          "where log.logDate > (DATE_SUB(CURRENT_DATE, INTERVAL 28 DAY)) and album.albumtypeid<>16 " \
           "group by artist.ArtistName order by hours desc limit 10;"
 
     results = common.get_results(sql)
@@ -758,6 +771,11 @@ def main():
 
     albums_added_last_14days()
 
+    f.write("\n\n" + ("*" * 105) + "\n")
+    f.write("THE 2+ A DAY CLUB\n")
+    f.write("*" * 105 + "\n\n")
+
+    albums_played_multi_times_in_single_day()
 
     f.write("\n\n" + ("*" * 105) + "\n")
     f.write("HISTORY\n")

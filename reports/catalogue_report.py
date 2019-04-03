@@ -63,7 +63,7 @@ def main():
 
     f.write("COLLECTION AS OF {}\n\n".format(date.today().strftime("%Y-%m-%d")))
 
-    sql = "SELECT * from albumlist;"
+    sql = "SELECT * from albumlist where AlbumType<>'Deleted';"
     c = conn.cursor()
     c.execute(sql)
     rows = c.fetchall()
