@@ -5,8 +5,8 @@ import os
 
 def run():
     sql = "SELECT album.yearreleased as `Year of Release`, source.Source, count(albumid) as Albums " \
-          "FROM album inner join source on album.SourceID = source.SourceID " \
-          "where album.albumtypeid<>16 group by album.yearreleased, source.Source " \
+          "FROM albumview as album inner join source on album.SourceID = source.SourceID " \
+          "group by album.yearreleased, source.Source " \
           "order by album.yearreleased, source.Source;"
     
     data = pd.read_sql(sql, common.conn)

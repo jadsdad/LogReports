@@ -29,7 +29,7 @@ def get_tracks(albumid):
 
 def get_albums():
     sql = "SELECT album.albumid, artistname, album " \
-          "FROM album INNER JOIN albumartist on album.albumid = albumartist.albumid " \
+          "FROM albumview as album INNER JOIN albumartist on album.albumid = albumartist.albumid " \
           "INNER JOIN artist on albumartist.artistid = artist.artistid " \
           "WHERE sourceid=4 and albumtypeid<>7 " \
           "and recordedtocassette is null  " \

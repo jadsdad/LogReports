@@ -28,7 +28,7 @@ def albums_by_format():
 
     f.write("{:<30}{:>10}{:>11}{:>10}{:>11}{:>10}{:>11}{:>10}\n".format("by Format", "Count", "%", "Plays", "%", "Played", "%", "Ratio"))
     f.write("-" * 105 + "\n")
-    sql = "SELECT source, COUNT(albumid) as SourceCount, SUM(playcount) as PlayCount, Sum(played) as Played FROM album inner join source on " \
+    sql = "SELECT source, COUNT(albumid) as SourceCount, SUM(playcount) as PlayCount, Sum(played) as Played FROM albumview as album inner join source on " \
           "album.sourceid = source.sourceid where album.albumtypeid<>16 GROUP BY source ORDER BY SourceCount desc;"
     results = common.get_results(sql)
 
@@ -52,7 +52,7 @@ def albums_by_type():
 
     f.write("{:<30}{:>10}{:>11}{:>10}{:>11}{:>10}{:>11}{:>10}\n".format("by Type", "Count", "%", "Plays", "%", "Played", "%", "Ratio"))
     f.write("-" * 105 + "\n")
-    sql = "SELECT albumtype, COUNT(albumid) as TypeCount, SUM(playcount) as PlayCount, SUM(played) as Played FROM album inner join albumtype on " \
+    sql = "SELECT albumtype, COUNT(albumid) as TypeCount, SUM(playcount) as PlayCount, SUM(played) as Played FROM albumview as album inner join albumtype on " \
           "album.albumtypeid = albumtype.albumtypeid where album.albumtypeid<>16 GROUP BY albumtype ORDER BY TypeCount desc;"
     results = common.get_results(sql)
 
@@ -77,7 +77,7 @@ def albums_by_decade():
 
     f.write("{:<30}{:>10}{:>11}{:>10}{:>11}{:>10}{:>11}{:>10}\n".format("by Decade", "Count", "%", "Plays", "%", "Played","%","Ratio"))
     f.write("-" * 105 + "\n")
-    sql = "SELECT (yearreleased DIV 10) * 10 as Decade, COUNT(albumid) as TypeCount, SUM(playcount) as PlayCount, sum(played) as Played FROM album " \
+    sql = "SELECT (yearreleased DIV 10) * 10 as Decade, COUNT(albumid) as TypeCount, SUM(playcount) as PlayCount, sum(played) as Played FROM albumview as album " \
           "where album.albumtypeid<>16 GROUP BY Decade ORDER BY Decade;"
 
     results = common.get_results(sql)
@@ -104,7 +104,7 @@ def albums_by_year():
 
     f.write("{:<30}{:>10}{:>11}{:>10}{:>11}{:>10}{:>11}{:>10}\n".format("by Year of Release", "Count", " ", "Plays", " ", "Played","%", "Ratio"))
     f.write("-" * 105 + "\n")
-    sql = "SELECT yearreleased, COUNT(albumid) as TypeCount, SUM(playcount) as PlayCount, Sum(played) as Played FROM album " \
+    sql = "SELECT yearreleased, COUNT(albumid) as TypeCount, SUM(playcount) as PlayCount, Sum(played) as Played FROM albumview as album " \
           "WHERE yearreleased >= 2018 and album.albumtypeid<>16 GROUP BY yearreleased ORDER BY yearreleased;"
 
     results = common.get_results(sql)
@@ -241,7 +241,7 @@ def albums_requiring_rerip():
 
     f.write("{:<80}{:>10}\n".format("Requiring Re-Rip/Re-Import", "Plays"))
     f.write("-" * 105 + "\n")
-    sql = "select artistcredit, album, playcount from album where albumtypeid=22 " \
+    sql = "select artistcredit, album, playcount FROM albumview as album where TBA=1 " \
           "order by playcount desc, artistcredit, album; "
 
     results = common.get_results(sql)
@@ -633,7 +633,7 @@ def thisweek_stats():
 
 
 def streamed_albums():
-    sql = "SELECT COUNT(albumid) FROM album where SourceID=6;"
+    sql = "SELECT COUNT(albumid) FROM albumview as album where SourceID=6;"
     results = common.get_results(sql)
     return results[0][0]
 
@@ -643,12 +643,12 @@ def total_size():
     return results[0][0]
 
 def total_logs():
-    sql = "SELECT SUM(playcount) FROM album where SourceID<>6;"
+    sql = "SELECT SUM(playcount) FROM albumview as album where SourceID<>6;"
     results = common.get_results(sql)
     return results[0][0]
 
 def total_streams():
-    sql = "SELECT SUM(playcount) FROM album where SourceID=6;"
+    sql = "SELECT SUM(playcount) FROM albumview as album where SourceID=6;"
     results = common.get_results(sql)
     return results[0][0]
 
@@ -659,7 +659,7 @@ def get_media_count(physical):
     else:
         criteria = "BETWEEN 4 and 5"
 
-    sql = "SELECT COUNT(albumid) as AlbumCount, sum(played) as Played FROM album where SourceID {};".format(criteria)
+    sql = "SELECT COUNT(albumid) as AlbumCount, sum(played) as Played FROM albumview as album where SourceID {};".format(criteria)
     results = common.get_results(sql)
     return results[0][0], results[0][1]
 

@@ -4,7 +4,8 @@ import matplotlib.pylab as plt
 import os
 
 def run():
-    sql = "select album.PlayCount as Played, count(album.AlbumID) as Albums from album group by album.PlayCount order by album.PlayCount"
+    sql = "select album.PlayCount as Played, count(album.AlbumID) as Albums " \
+          "from album group by album.PlayCount order by album.PlayCount"
 
     pcdata = pd.read_sql(sql, common.conn, index_col='Played')
 

@@ -10,7 +10,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 def run():
     with PdfPages(os.path.join(common.basedir, 'Albums by Year of Release.pdf')) as pp:
-        sql = "SELECT album.yearreleased as `Year of Release`, count(albumid) as Albums, sum(played) as Played, sum(playcount) as Plays FROM album group by album.yearreleased order by album.yearreleased;"
+        sql = "SELECT album.yearreleased as `Year of Release`, count(albumid) as Albums, sum(played) as Played, " \
+              "sum(playcount) as Plays FROM albumview as album " \
+              "group by album.yearreleased order by album.yearreleased;"
         data = pd.read_sql(sql, common.conn, index_col='Year of Release')
         fig, ax = plt.subplots(figsize=(20, 15))
         data[['Albums', 'Played']].plot(kind='line', ax=ax, title='Albums by Year of Release')

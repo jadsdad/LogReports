@@ -11,12 +11,16 @@ def run():
     td_string = thresh_date.strftime("%Y-%m-%d")
     date_range = pd.date_range(td_string, date.today())
 
-    sql = "select cast(album.dateadded as date) as `Date`, count(album.albumid) as `Albums Added` from album where album.albumtypeid <> 16 group by cast(album.dateadded as date);"
+    sql = "select cast(album.dateadded as date) as `Date`, count(album.albumid) as `Albums Added` " \
+          "from albumview as album group by cast(album.dateadded as date);"
 
     data = pd.read_sql(sql, common.conn, index_col='Date')
     data = data.reindex(date_range, fill_value=0)
 
-    unique_sql = "select log.albumid, min(log.logdate) as first_play from log inner join album on album.albumid = log.albumid where album.albumtypeid <> 16 group by log.albumid asc;"
+    unique_sql = "select log.albumid, min(log.logdate) as first_play " \
+                 "from log inner join albumview as album on album.albumid = log.albumid " \
+                 "group by log.albumid asc;"
+
     unique_data = pd.read_sql(unique_sql, common.conn)
     unique_data = unique_data.groupby('first_play').count()
     unique_data = unique_data.reindex(date_range, fill_value=0)

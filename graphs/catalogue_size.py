@@ -10,8 +10,8 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 def run():
     with PdfPages(os.path.join(common.basedir, 'Catalogue Size.pdf')) as pp:
-        sql = "select album.dateadded as `Date`, count(albumid) as `Albums` from album " \
-              "where album.albumtypeid <> 16 group by dateadded;"
+        sql = "select album.dateadded as `Date`, count(albumid) as `Albums` from albumview as album " \
+              "group by dateadded;"
         data = pd.read_sql(sql, common.conn)
         data['Date'] = pd.to_datetime(data['Date'])
         per = data['Date'].dt.to_period("D")
@@ -26,8 +26,8 @@ def run():
         plt.close()
 
         sql = "select album.dateadded as `Date`, source.source, count(albumid) as `Albums` " \
-              "from album inner join source on album.sourceid=source.sourceid " \
-              "where album.albumtypeid <> 16 group by dateadded, source;"
+              "from albumview as album inner join source on album.sourceid=source.sourceid " \
+              "group by dateadded, source;"
 
         data = pd.read_sql(sql, common.conn)
         data['Date'] = pd.to_datetime(data['Date'])

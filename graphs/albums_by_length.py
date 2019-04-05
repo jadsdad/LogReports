@@ -10,7 +10,10 @@ def run():
     lengths = pd.Series(range(1, 121))
     fig, ax = plt.subplots(figsize=(15,7))
 
-    sql = "select cast(round(albumlength / 60) as int) as RT, count(albumid) as `Albums`, sum(if(playcount=0, 0, 1)) as Played from albumlengths where cast(round(albumlength / 60) as int) <= 120 group by RT;"
+    sql = "select cast(round(albumlength / 60) as int) as RT, count(albumid) as `Albums`, " \
+          "sum(if(playcount=0, 0, 1)) as Played from albumlengths where cast(round(albumlength / 60) as int) <= 120 " \
+          "group by RT;"
+
     data = pd.read_sql(sql, common.conn, index_col='RT')
     data = data.reindex(lengths)
     data.fillna(0).plot(ax=ax, title='Albums by Length')
