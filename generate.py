@@ -1,4 +1,4 @@
-from reports import catalogue_report as catreport, stats_report as stats, TapeList as tape, artist_chart_report as artcr, album_chart_report as albcr
+from reports import catalogue_report as catreport, stats_report as stats, TapeList as tape, artist_chart_report as artcr, album_chart_report as albcr, rolling_chart_stats_artist as rolling
 from graphs import yoy_comparison_graph as yoy, \
     monthly_media_graph as mmg, \
     Art_Freq_Graphs as afg, \
@@ -37,7 +37,8 @@ def run():
                        apat.run(),
                        growth.run(),
                        abl.run(),
-                       abtp.run()]
+                       abtp.run(),
+                       rolling.run()]
 
     p = Pool(4)
     p.map_async(execute, report_routines)

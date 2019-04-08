@@ -134,7 +134,7 @@ def albums_by_length():
     f.write("-" * 105 + "\n")
     sql = "SELECT ((albumlength/60) DIV 15) * 15 as LengthGroup, COUNT(albumlengths.albumid) as TypeCount, " \
           "SUM(album.playcount) as PlayCount, sum(album.played) as Played " \
-          "FROM albumlengths INNER JOIN album on albumlengths.albumid = album.albumid " \
+          "FROM albumlengths INNER JOIN albumview as album on albumlengths.albumid = album.albumid " \
           "where albumlength < 120*60 and album.albumtypeid<>16 GROUP BY LengthGroup ORDER BY LengthGroup;"
 
     results = common.get_results(sql)
