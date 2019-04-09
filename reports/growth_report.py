@@ -3,10 +3,11 @@ import os
 import io
 from datetime import date, timedelta
 
-conn = common.conn
-thresh_date = (date.today() - timedelta(weeks=13)).strftime("%Y-%m-%d")
 
 def run():
+
+    conn = common.conn
+    thresh_date = (date.today() - timedelta(weeks=13)).strftime("%Y-%m-%d")
 
     sql = "Select * from (select 'Added' as Status, cast(album.dateadded as date) as `Date`, album.artistcredit as Artist, " \
           "album.album as Title from albumview as album " \
