@@ -1,12 +1,25 @@
 import logtools_common.logtools_common as common
 import io
+from datetime import date, timedelta
 from pathlib import Path
+
+def get_plays_in_week(artistid, chart_date):
+
+    startofweek = (chart_date - timedelta(weeks=13) + timedelta(days=1)).strftime("%Y-%m-%d")
+    endofweek = chart_date.strftime("%Y-%m-%d")
+
+    results = common.get_results("SELECT count(*) as logcount "
+                                 "FROM log INNER JOIN albumartist ON albumartist.albumid = log.albumid "
+                                 "INNER JOIN albumview ON albumartist.albumid = albumview.albumid "
+                                 f"WHERE albumartist.artistid = {artistid} and log.logdate between '{startofweek}' and '{endofweek}';")
+
+    return results[0][0]
 
 def run():
     conn = common.conn
     seperator = "\n\n" + ("-" * 120) + "\n"
 
-    results = common.get_results("SELECT artist.artistname, chr.chartdate, chr.rank, chr.chartrun "
+    results = common.get_results("SELECT artist.artistid, artist.artistname, chr.chartdate, chr.rank, chr.chartrun "
                                     "FROM artist INNER JOIN chart_history_rolling chr "
                                     "ON artist.artistid = chr.artistid "
                                     "ORDER BY artist.sortname, chr.chartdate;")
@@ -18,7 +31,7 @@ def run():
     last_rank = 99
 
     for r in results:
-        artist, chartdate, rank, run = r
+        artistid, artist, chartdate, rank, run = r
         indicator = ""
 
         if artist != last_artist:
@@ -39,7 +52,10 @@ def run():
         elif rank < last_rank and indicator == "":
             indicator = "+"
 
-        linestr = "\t\t{:<25}{:>5}{:>5}\n".format(chartdate.strftime("%Y-%b-%d"), rank, indicator)
+        plays = get_plays_in_week(artistid, chartdate)
+
+        linestr = "\t\t{:<25}{:>5}{:>5}{:>10}{}\n".format(chartdate.strftime("%Y-%b-%d"), rank, indicator,
+                                                        "", "*" * plays if plays > 0 else "")
         out.write(linestr)
         last_rank = rank
 
